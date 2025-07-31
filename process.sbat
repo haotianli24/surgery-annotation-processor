@@ -1,0 +1,28 @@
+#!/bin/sh
+#SBATCH --job-name=reencode_video
+#SBATCH --nodes=1
+#SBATCH --tasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32GB
+#SBATCH --time=02:00:00
+#SBATCH --account=likosky0
+#SBATCH --partition=standard
+#SBATCH --gpus=0
+#SBATCH --mail-user=howtian@umich.edu
+#SBATCH --mail-type=NONE
+#SBATCH --output="reencode_video-%j_%N.out"
+#SBATCH --error="reencode_video-%j_%N.err"
+
+# Initialize Conda
+source $HOME/miniconda3/etc/profile.d/conda.sh
+conda activate med_vid
+
+cd $HOME/medical_video_processing
+echo "Working in: $PWD"
+
+# Input and output paths
+
+input_video="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/001_001_SF/STEP_3.mp4"
+output_video="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/001_001_SF/STEP_3_PREPERATION_AND_INITIATION_OF_CPB.mp4"
+
+time python3 /home/howtian/medical_video_processing/blur.py "$input_video" "$output_video"
