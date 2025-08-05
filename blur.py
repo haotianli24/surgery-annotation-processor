@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import cv2
 import sys
 import os
+import numpy as np
 
 def main():
 
@@ -34,6 +35,8 @@ def main():
     root = tree.getroot()
 
     annotations = {}
+    
+    # Parse rectangular bounding boxes
     for track in root.findall('.//track'):
         for box in track.findall('.//box'):
             frame = int(box.attrib['frame'])
@@ -42,7 +45,18 @@ def main():
             y1 = int(float(box.attrib['ytl']))
             x2 = int(float(box.attrib['xbr']))
             y2 = int(float(box.attrib['ybr']))
-            region = (x1, y1, x2, y2, occluded)
+            region = ('box', x1, y1, x2, y2, occluded)
+            annotations.setdefault(frame, []).append(region)
+        
+        # Parse ellipses
+        for ellipse in track.findall('.//ellipse'):
+            frame = int(ellipse.attrib['frame'])
+            occluded = int(ellipse.attrib['occluded'])
+            cx = float(ellipse.attrib['cx'])  # center x
+            cy = float(ellipse.attrib['cy'])  # center y
+            rx = float(ellipse.attrib['rx'])  # radius x
+            ry = float(ellipse.attrib['ry'])  # radius y
+            region = ('ellipse', cx, cy, rx, ry, occluded)
             annotations.setdefault(frame, []).append(region)
     
     # Opening video for annotations (FFMPEG)
@@ -78,28 +92,44 @@ def main():
 
         # Apply blurring to annotated regions
         regions = annotations.get(frame_idx, [])
-        for x1, y1, x2, y2, occluded in regions:
-            # occluded = no blur needed 
-            if occluded == 1:
-                continue
-                
-            # ensure nothing goes out of bounds 
-            x1 = max(0, min(x1, width-1))
-            y1 = max(0, min(y1, height-1))
-            x2 = max(0, min(x2, width-1))
-            y2 = max(0, min(y2, height-1))
+        if regions:
+            blurred = cv2.GaussianBlur(frame, (71, 71), 0)
+            mask = np.zeros((height, width), dtype=np.uint8)
             
-            if x2 > x1 and y2 > y1:  
-                roi = frame[y1:y2, x1:x2]
-                if roi.size > 0:
-                    blurred_roi = cv2.GaussianBlur(roi, (51, 51), 0)
-                    frame[y1:y2, x1:x2] = blurred_roi
+            for region in regions:
+                region_type = region[0]
+                occluded = region[-1]
+                
+                # occluded = no blur needed 
+                if occluded == 1:
+                    continue
+                
+                if region_type == 'box':
+                    _, x1, y1, x2, y2, _ = region
+                    # ensure nothing goes out of bounds 
+                    x1 = max(0, min(x1, width - 1))
+                    y1 = max(0, min(y1, height - 1))
+                    x2 = max(0, min(x2, width - 1))
+                    y2 = max(0, min(y2, height - 1))
+                    
+                    if x2 > x1 and y2 > y1:
+                        cv2.rectangle(mask, (x1, y1), (x2, y2), 255, -1)
+                        processed_regions += 1
+                
+                elif region_type == 'ellipse':
+                    _, cx, cy, rx, ry, _ = region
+                    
+                    # Draw ellipse on mask
+                    ellipse_center = (int(cx), int(cy))
+                    ellipse_axes = (int(rx), int(ry))
+                    cv2.ellipse(mask, ellipse_center, ellipse_axes, 0, 0, 360, 255, -1)
                     processed_regions += 1
+            
+            # Apply blur using mask
+            frame = np.where(mask[:, :, None] == 255, blurred, frame)
 
         out.write(frame)
         frame_idx += 1
-        
-
 
     cap.release()
     out.release()
