@@ -58,6 +58,22 @@ def main():
             ry = float(ellipse.attrib['ry'])  # radius y
             region = ('ellipse', cx, cy, rx, ry, occluded)
             annotations.setdefault(frame, []).append(region)
+        
+        # Parse polygons
+        for polygon in track.findall('.//polygon'):
+            frame = int(polygon.attrib['frame'])
+            occluded = int(polygon.attrib.get('occluded', '0'))
+            points_str = polygon.attrib['points']
+            points = []
+            for pair in points_str.strip().split(';'):
+                if not pair:
+                    continue
+                x_str, y_str = pair.split(',')
+                x = int(float(x_str))
+                y = int(float(y_str))
+                points.append((x, y))
+            region = ('polygon', points, occluded)
+            annotations.setdefault(frame, []).append(region)
     
     # Opening video for annotations (FFMPEG)
     cap = cv2.VideoCapture(input_video, cv2.CAP_FFMPEG)
@@ -124,6 +140,13 @@ def main():
                     ellipse_axes = (int(rx), int(ry))
                     cv2.ellipse(mask, ellipse_center, ellipse_axes, 0, 0, 360, 255, -1)
                     processed_regions += 1
+                
+                elif region_type == 'polygon':
+                    _, points, _ = region
+                    if len(points) >= 3:
+                        pts = np.array(points, dtype=np.int32).reshape((-1, 1, 2))
+                        cv2.fillPoly(mask, [pts], 255)
+                        processed_regions += 1
             
             # Apply blur using mask
             frame = np.where(mask[:, :, None] == 255, blurred, frame)
