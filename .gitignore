@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# But include these specific files
+!blur.py
+!export_annotations.py
+!process.sbat
+!.gitignore
+

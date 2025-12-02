@@ -1,0 +1,116 @@
+#!/bin/sh
+#SBATCH --job-name=reencode_video
+#SBATCH --nodes=1
+#SBATCH --tasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32GB
+#SBATCH --time=12:00:00
+#SBATCH --account=likosky0
+#SBATCH --partition=standard
+#SBATCH --gpus=0
+#SBATCH --mail-user=howtian@umich.edu
+#SBATCH --mail-type=NONE
+#SBATCH --output="reencode_video-%j_%N.out"
+#SBATCH --error="reencode_video-%j_%N.err"
+
+# Initialize Conda
+source $HOME/miniconda3/etc/profile.d/conda.sh
+conda activate med_vid
+
+cd $HOME/medical_video_processing
+echo "Working in: $PWD"
+
+# Define multiple input videos, output videos, and annotation files
+# Each video needs: input path, output path, and annotation file path
+# Add as many video triplets as needed
+
+# 001_026_SF_3
+input_video_001_026_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_026/Originals/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_allclean.mp4"
+output_video_001_026_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_026/SF/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_allclean_deidentified.mp4"
+annotation_file_001_026_SF_3="$HOME/medical_video_processing/cvat_exports/001_026_SF_3/annotations.xml"
+
+# 001_026_SF_10
+input_video_001_026_SF_10="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_026/Originals/STEP 10_BYPASS_CESSATION_NL_All_Clean.mp4"
+output_video_001_026_SF_10="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_026/SF/STEP 10_BYPASS_CESSATION_NL_All_Clean_deidentified.mp4"
+annotation_file_001_026_SF_10="$HOME/medical_video_processing/cvat_exports/001_026_SF_10/annotations.xml"
+
+# 001_017_SF_3
+input_video_001_017_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_017/Originals/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_All_Clean.mp4"
+output_video_001_017_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_017/SF/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_All_Clean_deidentified.mp4"
+annotation_file_001_017_SF_3="$HOME/medical_video_processing/cvat_exports/001_017_SF_3/annotations.xml"
+
+# 001_017_SF_10
+input_video_001_017_SF_10="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_017/Originals/STEP 10_BYPASS_CESSATION_NL_All_Clean.mp4"
+output_video_001_017_SF_10="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_017/SF/STEP 10_BYPASS_CESSATION_NL_All_Clean_deidentified.mp4"
+annotation_file_001_017_SF_10="$HOME/medical_video_processing/cvat_exports/001_017_SF_10/annotations.xml"
+# 001_027_SF_3
+#input_video_001_027_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/Originals/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_All_Clean.mp4"
+#output_video_001_027_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/SF/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_All_Clean_deidentified.mp4"
+#annotation_file_001_027_SF_3="$HOME/medical_video_processing/cvat_exports/001_027_SF_3/annotations.xml"
+
+# 001_027_SF_10
+#input_video_001_027_SF_10="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/Originals/STEP 10_BYPASS_CESSATION_NL_All_Clean.mp4"
+#output_video_001_027_SF_10="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/SF/STEP 10_BYPASS_CESSATION_NL_All_Clean_deidentified.mp4"
+#annotation_file_001_027_SF_10="$HOME/medical_video_processing/cvat_exports/001_027_SF_10/annotations.xml"
+
+# 001_027_SF_601
+#input_video_001_027_SF_601="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/Originals/STEP 601_FIRST_DISTAL_ANASTOMOSIS_NL_All_Clean.mp4"
+#output_video_001_027_SF_601="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/SF/STEP 601_FIRST_DISTAL_ANASTOMOSIS_NL_All_Clean_deidentified.mp4"
+#annotation_file_001_027_SF_601="$HOME/medical_video_processing/cvat_exports/001_027_SF_601/annotations.xml"
+
+# 001_027_SF_801
+#input_video_001_027_SF_801="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/Originals/STEP 801_FIRST_PROXIMAL_ANASTOMOSIS_NL_All_Clean.mp4"
+#output_video_001_027_SF_801="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_027/SF/STEP 801_FIRST_PROXIMAL_ANASTOMOSIS_NL_All_Clean_deidentified.mp4"
+#annotation_file_001_027_SF_801="$HOME/medical_video_processing/cvat_exports/001_027_SF_801/annotations.xml"
+
+# 001_028_SF_3
+#input_video_001_028_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_028/Originals/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_clean1.mp4"
+#output_video_001_028_SF_3="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_028/SF/STEP 3_PREPARATION_AND_INITIATION_OF_CPB_NL_clean1_deidentified.mp4"
+#annotation_file_001_028_SF_3="$HOME/medical_video_processing/cvat_exports/001_028_SF_3/annotations.xml"
+
+# 001_028_SF_601
+#input_video_001_028_SF_601="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_028/Originals/STEP 601_FIRST_DISTAL_ANASTOMOSIS_NL_All_Clean.mp4"
+#output_video_001_028_SF_601="/nfs/turbo/umms-likosky/Site/Videos_Site001_FBellos/video_annotations/Site 001/001_028/SF/STEP 601_FIRST_DISTAL_ANASTOMOSIS_NL_All_Clean_deidentified.mp4"
+#annotation_file_001_028_SF_601="$HOME/medical_video_processing/cvat_exports/001_028_SF_601/annotations.xml"
+
+
+# Build arrays of all videos to process
+input_videos=(
+    "$input_video_001_026_SF_3"
+    "$input_video_001_026_SF_10"
+)
+
+output_videos=(
+    "$output_video_001_026_SF_3"
+    "$output_video_001_026_SF_10"
+)
+
+annotation_files=(
+    "$annotation_file_001_026_SF_3"
+    "$annotation_file_001_026_SF_10"
+)
+
+# Process each video individually with status messages
+echo "=========================================="
+echo "Starting video processing batch"
+echo "Total videos to process: ${#input_videos[@]}"
+echo "=========================================="
+
+# Loop through all videos
+for i in "${!input_videos[@]}"; do
+    echo ""
+    echo "[$((i+1))/${#input_videos[@]}] Processing: $(basename "${input_videos[$i]}")"
+    echo "Input: ${input_videos[$i]}"
+    echo "Output: ${output_videos[$i]}"
+    
+    time python3 /home/howtian/medical_video_processing/blur.py \
+        "${input_videos[$i]}" "${output_videos[$i]}" "${annotation_files[$i]}"
+    
+    echo "Finished: $(basename "${input_videos[$i]}")"
+    echo ""
+done
+
+echo "=========================================="
+echo "All videos processed successfully!"
+echo "=========================================="
+
